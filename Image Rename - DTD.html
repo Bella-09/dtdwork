@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Renamer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            height: 100vh;
+            gap: 20px;
+        }
+        .sidebar {
+            width: 25%;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            overflow-y: auto;
+            height: 90vh;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin: 0 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .main {
+            width: 50%;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"], input[type="text"], input[type="number"], button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        #output p {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .file-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="filesBefore">
+        <h2>Files Before</h2>
+        <ul id="uploadedFiles" class="file-list"></ul>
+    </div>
+    <div class="main">
+        <h1>Photo Renamer</h1>
+        <div class="container">
+            <input type="file" id="fileInput" multiple>
+            <button onclick="uploadToFilesBefore()">Upload to Files Before</button>
+            <input type="text" id="customName" placeholder="Enter custom name (optional)">
+            <input type="number" id="startNumber" placeholder="Enter starting number (default is 1)" min="1">
+            <button onclick="renameFiles()">Rename Files</button>
+            <div id="output"></div>
+        </div>
+    </div>
+    <div class="sidebar" id="filesAfter">
+        <h2>Files After</h2>
+        <ul id="renamedFiles" class="file-list"></ul>
+        <button id="downloadAll" style="display: none;" onclick="downloadAll()">Download All</button>
+    </div>
+
+    <script>
+        function uploadToFilesBefore() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadedFilesList = document.getElementById('uploadedFiles');
+            const files = Array.from(fileInput.files); // Convert FileList to Array
+
+            if (files.length === 0) {
+                alert('Please select some files to upload.');
+                return;
+            }
+
+            files.forEach(file => {
+                // Add to uploaded files list with image preview and delete button
+                const uploadedItem = document.createElement('li');
+                uploadedItem.className = 'file-item';
+                const uploadedImg = document.createElement('img');
+                uploadedImg.src = URL.createObjectURL(file);
+                const uploadedText = document.createElement('span');
+                uploadedText.textContent = file.name;
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.style.marginLeft = 'auto';
+                deleteButton.onclick = () => {
+                    uploadedItem.remove(); // Remove the item from the list
+                    if (uploadedFilesList.children.length === 0) {
+                        fileInput.value = ''; // Clear file input if no files remain
+                    }
+                };
+                uploadedItem.appendChild(uploadedImg);
+                uploadedItem.appendChild(uploadedText);
+                uploadedItem.appendChild(deleteButton);
+                uploadedFilesList.appendChild(uploadedItem);
+            });
+
+            // Clear file input after uploading
+            fileInput.value = '';
+        }
+
+        function renameFiles() {
+            const customNameInput = document.getElementById('customName');
+            const startNumberInput = document.getElementById('startNumber');
+            const uploadedFilesList = document.getElementById('uploadedFiles');
+            const renamedFilesList = document.getElementById('renamedFiles');
+            const downloadAllButton = document.getElementById('downloadAll');
+            const customName = customNameInput.value.trim();
+            const startNumber = parseInt(startNumberInput.value.trim()) || 1;
+
+            const uploadedItems = Array.from(uploadedFilesList.children); // Get all items in "Files Before"
+            if (uploadedItems.length === 0) {
+                alert('No files to rename. Please upload files first.');
+                return;
+            }
+
+            renamedFilesList.innerHTML = ''; // Clear previous renamed files
+            const renamedFiles = [];
+
+            uploadedItems.forEach((item, index) => {
+                const fileName = item.querySelector('span').textContent;
+                const fileExtension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+                const baseName = customName || `Photo`;
+                const newName = `${baseName} (${startNumber + index})${fileExtension}`;
+                const imageSrc = item.querySelector('img').src;
+
+                // Add to renamed files list with image preview and checkbox
+                const renamedItem = document.createElement('li');
+                renamedItem.className = 'file-item';
+                const renamedImg = item.querySelector('img').cloneNode(true); // Clone the image
+                const renamedText = document.createElement('span');
+                renamedText.textContent = newName;
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'file-checkbox';
+                checkbox.checked = true; // Default to checked
+                renamedItem.appendChild(checkbox);
+                renamedItem.appendChild(renamedImg);
+                renamedItem.appendChild(renamedText);
+                renamedFilesList.appendChild(renamedItem);
+
+                // Create a renamed file object for download
+                renamedFiles.push({ name: newName, src: imageSrc, checkbox });
+            });
+
+            // Show download all button if files are renamed
+            if (renamedFiles.length > 0) {
+                downloadAllButton.style.display = 'block';
+                downloadAllButton.onclick = () => downloadAll(renamedFiles);
+            }
+        }
+
+        function downloadAll(files) {
+            const selectedFiles = files.filter(({ checkbox }) => checkbox.checked);
+
+            if (selectedFiles.length === 0) {
+                alert('No files selected for download.');
+                return;
+            }
+
+            const zip = new JSZip();
+            const folder = zip.folder("Renamed_Files");
+
+            const downloadPromises = selectedFiles.map(({ name, src }) =>
+                fetch(src)
+                    .then(response => response.blob())
+                    .then(blob => folder.file(name, blob))
+                    .catch(error => console.error('Error adding file to ZIP:', error))
+            );
+
+            Promise.all(downloadPromises).then(() => {
+                zip.generateAsync({ type: "blob" }).then(content => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = "Renamed_Files.zip";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            });
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</body>
+</html>

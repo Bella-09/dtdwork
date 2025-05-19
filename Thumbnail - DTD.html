@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pro Emoji Thumbnail Maker - Sidebar Controls</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: linear-gradient(120deg, #d3ffe8 0%, #9adcfb 100%);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .main-wrap {
+      display: flex;
+      flex-direction: row;
+      margin-top: 30px;
+      gap: 30px;
+      align-items: flex-start;
+      width: 98vw;
+      max-width: 1200px;
+    }
+    .controls-panel {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 10px 36px 0 rgba(0,0,0,0.13);
+      padding: 14px 10px 10px 12px; /* reduced padding */
+      min-width: 220px; /* reduced min width */
+      max-width: 300px; /* reduced max width */
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 7px; /* reduced gap */
+      position: sticky;
+      top: 12px;
+      z-index: 1;
+      box-sizing: border-box;
+    }
+    .controls-panel label {
+      font-size: 0.93rem; /* smaller font */
+      font-weight: 500;
+      margin-bottom: 1px;
+      color: #1e8054;
+    }
+    .controls-panel input[type="text"], .controls-panel textarea, .controls-panel input[type="number"] {
+      width: 100%;
+      padding: 4px 7px; /* smaller padding */
+      border: 1.2px solid #b9e2d7;
+      border-radius: 6px;
+      font-size: 0.97rem; /* smaller font */
+      margin-bottom: 3px;
+      outline-color: #22B573;
+      background: #f4fefd;
+      resize: none;
+      box-sizing: border-box;
+    }
+    .controls-panel input[type="color"] {
+      width: 28px;
+      height: 28px;
+      border: none;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 2px;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 2px;
+    }
+    .upload-label {
+      background: linear-gradient(90deg, #22B573 0%, #6AD7E5 100%);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      border-radius: 7px;
+      padding: 7px 12px; /* smaller padding */
+      cursor: pointer;
+      font-size: 0.97rem; /* smaller font */
+      margin-bottom: 4px;
+      margin-top: 2px;
+      box-shadow: 0 2px 8px rgba(34,181,115,0.08);
+      display: inline-block;
+    }
+    #inputImage {
+      display: none;
+    }
+    .canvas-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    #thumbnailCanvas {
+      background: #e9f8fd;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+      margin-bottom: 10px;
+      display: block;
+      max-width: 98vw;
+      max-height: 80vh;
+    }
+    .download-btn {
+      background: linear-gradient(90deg, #22B573 0%, #6AD7E5 100%);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(34,181,115,0.08);
+      transition: background 0.2s;
+      margin-bottom: 4px;
+    }
+    .note {
+      font-size: 0.97rem;
+      color: #888;
+      text-align: center;
+      margin-top: 8px;
+      max-width: 370px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    @media (max-width: 1100px) {
+      .main-wrap { flex-direction: column; align-items: center; }
+      .canvas-area { width: 100%; }
+      .controls-panel { position: static; width: 98vw; max-width: 470px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-wrap">
+    <div class="controls-panel">
+      <label class="upload-label" for="inputImage">Upload Background Photo</label>
+      <input type="file" id="inputImage" accept="image/*">
+
+      <label>Canvas Width (px):</label>
+      <input type="number" id="canvasWidth" min="150" max="1600" value="340">
+      <label>Canvas Height (px):</label>
+      <input type="number" id="canvasHeight" min="150" max="2000" value="476">
+
+      <label>Title (Top):</label>
+      <input type="text" id="titleText" value="50+ Special 3D Emoji Pack">
+
+      <label>Title Size (px):</label>
+      <input type="number" id="titleSize" min="10" max="90" value="27">
+
+      <label>Title Color:</label>
+      <div class="color-row">
+        <input type="color" id="titleColor" value="#ffffff">
+        <span>Background</span>
+        <input type="color" id="titleBgColor" value="#22B573">
+      </div>
+      <div class="slider-row">
+        <span>Padding</span>
+        <input type="range" id="titlePadding" min="5" max="120" value="24">
+        <span id="titlePaddingVal">24</span>
+      </div>
+
+      <label>Subtitle (Under Title):</label>
+      <input type="text" id="subtitleText" value="Add Personality to the Digital World">
+
+      <label>Subtitle Size (px):</label>
+      <input type="number" id="subtitleSize" min="6" max="40" value="15">
+
+      <label>Subtitle Color:</label>
+      <input type="color" id="subtitleColor" value="#ffffff">
+
+      <label>Green Bar Text:</label>
+      <input type="text" id="barText" value="🛠️ Use in Reels • Thumbnails • Notion • Digital Planners • Social Posts">
+
+      <label>Bar Size (px):</label>
+      <input type="number" id="barFontSize" min="10" max="40" value="18">
+      <label>Bar Color:</label>
+      <input type="color" id="barColor" value="#22B573">
+      <label>Bar Text Color:</label>
+      <input type="color" id="barTextColor" value="#ffffff">
+
+      <div class="slider-row">
+        <span>Bar Position</span>
+        <input type="range" id="barY" min="20" max="300" value="106">
+        <span id="barYVal">106</span>
+      </div>
+
+      <label>Price Bar Text:</label>
+      <input type="text" id="priceText" value="☕ Just $6.99 – Limited launch price!">
+      <label>Price Bar Size (px):</label>
+      <input type="number" id="priceBarFontSize" min="10" max="40" value="18">
+      <label>Price Bar Color:</label>
+      <input type="color" id="priceBarColor" value="#24d94a">
+
+      <div class="slider-row">
+        <span>Price Bar Position</span>
+        <input type="range" id="priceBarY" min="50" max="700" value="372">
+        <span id="priceBarYVal">372</span>
+      </div>
+
+      <label>Bottom Card Text:</label>
+      <textarea rows="3" id="bottomText">Instant Download
+Compatible with all platforms
+😍 Only on Gumroad 😍</textarea>
+      <label>Bottom Card Size (px):</label>
+      <input type="number" id="bottomCardFontSize" min="10" max="36" value="18">
+      <label>Bottom Card Color:</label>
+      <input type="color" id="bottomCardColor" value="#ffffff">
+      <label>Bottom Card Text Color:</label>
+      <input type="color" id="bottomCardTextColor" value="#222222">
+      <label>Bottom Card Border Radius:</label>
+      <input type="number" id="bottomCardRadius" min="0" max="60" value="18">
+      <div class="slider-row">
+        <span>Card Position</span>
+        <input type="range" id="cardY" min="70" max="900" value="442">
+        <span id="cardYVal">442</span>
+      </div>
+
+      <label>Gradient Color 1:</label>
+      <input type="color" id="gradientColor1" value="#22B573">
+      <label>Gradient Color 1 Alpha:</label>
+      <input type="range" id="gradientAlpha1" min="0" max="1" step="0.01" value="0.21">
+      <label>Gradient Color 2:</label>
+      <input type="color" id="gradientColor2" value="#6AD7E5">
+      <label>Gradient Color 2 Alpha:</label>
+      <input type="range" id="gradientAlpha2" min="0" max="1" step="0.01" value="0.07">
+      <label><input type="checkbox" id="bottomCardTextCenter"> Center Bottom Card Text Vertically</label>
+    </div>
+    <div class="canvas-area">
+      <canvas id="thumbnailCanvas" width="340" height="476"></canvas>
+      <button class="download-btn" id="downloadBtn" disabled>Download Thumbnail</button>
+      <div class="note">Use the controls on the left to customize your emoji thumbnail. Download when ready!</div>
+    </div>
+  </div>
+  <script>
+    // Helper functions for drawing
+    function hexToRgba(hex, alpha) {
+      hex = hex.replace('#', '');
+      let bigint = parseInt(hex, 16);
+      let r = (bigint >> 16) & 255;
+      let g = (bigint >> 8) & 255;
+      let b = bigint & 255;
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+    function drawAdjustableGradient(ctx, w, h, color1, alpha1, color2, alpha2) {
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, hexToRgba(color1, alpha1));
+      grad.addColorStop(1, hexToRgba(color2, alpha2));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
+    function drawText(ctx, text, size, color, x, y, opts={}) {
+      ctx.save();
+      ctx.font = `bold ${size}px 'Segoe UI', Arial, sans-serif`;
+      ctx.textAlign = opts.align || "center";
+      ctx.shadowColor = opts.shadowColor || "#fff";
+      ctx.shadowBlur = opts.shadowBlur || 6;
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+    function drawBanner(ctx, text, y, color, textColor, fontSize, w, h) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.97;
+      ctx.fillRect(0, y-parseInt(fontSize)*1.3, w, fontSize*1.85);
+      ctx.globalAlpha = 1;
+      ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillStyle = textColor;
+      ctx.textAlign = "center";
+      ctx.shadowColor = "#1f7d4a";
+      ctx.shadowBlur = 2;
+      ctx.fillText(text, w/2, y);
+      ctx.restore();
+    }
+    function drawWhiteCard(ctx, text, y, cardColor, cardTextColor, fontSize, w, h, radius, centerText) {
+      ctx.save();
+      ctx.globalAlpha = 0.94;
+      ctx.fillStyle = cardColor;
+      // Draw rounded rectangle
+      let x = w*0.053, cardW = w*0.89, cardH = fontSize*3.5, cardY = y-fontSize*1.6;
+      ctx.beginPath();
+      ctx.moveTo(x+radius, cardY);
+      ctx.lineTo(x+cardW-radius, cardY);
+      ctx.quadraticCurveTo(x+cardW, cardY, x+cardW, cardY+radius);
+      ctx.lineTo(x+cardW, cardY+cardH-radius);
+      ctx.quadraticCurveTo(x+cardW, cardY+cardH, x+cardW-radius, cardY+cardH);
+      ctx.lineTo(x+radius, cardY+cardH);
+      ctx.quadraticCurveTo(x, cardY+cardH, x, cardY+cardH-radius);
+      ctx.lineTo(x, cardY+radius);
+      ctx.quadraticCurveTo(x, cardY, x+radius, cardY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillStyle = cardTextColor;
+      ctx.textAlign = "center";
+      ctx.shadowColor = "#e2e2e2";
+      ctx.shadowBlur = 2;
+      let lines = text.split("\n");
+      let totalHeight = lines.length * fontSize * 1.25;
+      let startY = centerText ? (cardY + (cardH - totalHeight) / 2 + fontSize) : (y - fontSize + 0);
+      for(let i=0; i<lines.length; i++) {
+        ctx.fillText(lines[i], w/2, startY + i*fontSize*1.25);
+      }
+      ctx.restore();
+    }
+
+    const canvas = document.getElementById('thumbnailCanvas');
+    const ctx = canvas.getContext('2d');
+    const inputImage = document.getElementById('inputImage');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // Controls
+    const canvasWidth = document.getElementById('canvasWidth');
+    const canvasHeight = document.getElementById('canvasHeight');
+
+    const titleText = document.getElementById('titleText');
+    const titleColor = document.getElementById('titleColor');
+    const titleBgColor = document.getElementById('titleBgColor');
+    const titlePadding = document.getElementById('titlePadding');
+    const titlePaddingVal = document.getElementById('titlePaddingVal');
+    const titleSize = document.getElementById('titleSize');
+
+    const subtitleText = document.getElementById('subtitleText');
+    const subtitleColor = document.getElementById('subtitleColor');
+    const subtitleSize = document.getElementById('subtitleSize');
+
+    const barText = document.getElementById('barText');
+    const barColor = document.getElementById('barColor');
+    const barTextColor = document.getElementById('barTextColor');
+    const barY = document.getElementById('barY');
+    const barYVal = document.getElementById('barYVal');
+    const barFontSize = document.getElementById('barFontSize');
+
+    const priceText = document.getElementById('priceText');
+    const priceBarColor = document.getElementById('priceBarColor');
+    const priceBarY = document.getElementById('priceBarY');
+    const priceBarYVal = document.getElementById('priceBarYVal');
+    const priceBarFontSize = document.getElementById('priceBarFontSize');
+
+    const bottomText = document.getElementById('bottomText');
+    const bottomCardColor = document.getElementById('bottomCardColor');
+    const bottomCardTextColor = document.getElementById('bottomCardTextColor');
+    const cardY = document.getElementById('cardY');
+    const cardYVal = document.getElementById('cardYVal');
+    const bottomCardFontSize = document.getElementById('bottomCardFontSize');
+    const bottomCardRadius = document.getElementById('bottomCardRadius');
+    const bottomCardTextCenter = document.getElementById('bottomCardTextCenter');
+
+    const gradientColor1 = document.getElementById('gradientColor1');
+    const gradientAlpha1 = document.getElementById('gradientAlpha1');
+    const gradientColor2 = document.getElementById('gradientColor2');
+    const gradientAlpha2 = document.getElementById('gradientAlpha2');
+
+    let bgImg = null;
+
+    // Draws the customized thumbnail
+    function renderThumbnail() {
+      const w = parseInt(canvas.width);
+      const h = parseInt(canvas.height);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#e9f8fd";
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw background image if uploaded
+      if (bgImg) {
+        let [iw, ih] = [bgImg.width, bgImg.height];
+        let scale = Math.max(w/iw, h/ih);
+        let imgW = iw * scale, imgH = ih * scale;
+        let x = (w - imgW)/2, y = (h - imgH)/2;
+        ctx.drawImage(bgImg, x, y, imgW, imgH);
+      }
+
+      // Draw adjustable gradient behind all text/cards (but above image)
+      drawAdjustableGradient(
+        ctx, w, h,
+        gradientColor1.value, gradientAlpha1.value,
+        gradientColor2.value, gradientAlpha2.value
+      );
+
+      // Title bar (top)
+      let tPad = Number(titlePadding.value);
+      ctx.save();
+      ctx.fillStyle = titleBgColor.value;
+      ctx.globalAlpha = 0.98;
+      ctx.fillRect(0, tPad, w, Number(titleSize.value)*1.6);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      drawText(ctx, titleText.value, Number(titleSize.value), titleColor.value, w/2, tPad + Number(titleSize.value)+3, {
+        shadowColor:titleBgColor.value,shadowBlur:10
+      });
+
+      // Subtitle
+      drawText(ctx, subtitleText.value, Number(subtitleSize.value), subtitleColor.value, w/2, tPad + Number(titleSize.value) + Number(subtitleSize.value) + 9, {shadowColor:"#22B573",shadowBlur:4});
+
+      // Green bar (feature bar)
+      drawBanner(ctx, barText.value, Number(barY.value), barColor.value, barTextColor.value, Number(barFontSize.value), w, h);
+
+      // Price bar
+      drawBanner(ctx, priceText.value, Number(priceBarY.value), priceBarColor.value, "#fff", Number(priceBarFontSize.value), w, h);
+
+      // Bottom white card
+      drawWhiteCard(ctx, bottomText.value, Number(cardY.value), bottomCardColor.value, bottomCardTextColor.value, Number(bottomCardFontSize.value), w, h, Number(bottomCardRadius.value), bottomCardTextCenter.checked);
+
+      // Enable download if has image
+      downloadBtn.disabled = !bgImg;
+    }
+
+    // Image upload
+    inputImage.addEventListener('change', e => {
+      const file = inputImage.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new window.Image();
+        img.onload = () => {
+          bgImg = img;
+          renderThumbnail();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Save all control values to localStorage
+    function saveControlsToLocalStorage() {
+      const controls = {
+        canvasWidth: canvasWidth.value,
+        canvasHeight: canvasHeight.value,
+        titleText: titleText.value,
+        titleColor: titleColor.value,
+        titleBgColor: titleBgColor.value,
+        titlePadding: titlePadding.value,
+        titleSize: titleSize.value,
+        subtitleText: subtitleText.value,
+        subtitleColor: subtitleColor.value,
+        subtitleSize: subtitleSize.value,
+        barText: barText.value,
+        barColor: barColor.value,
+        barTextColor: barTextColor.value,
+        barY: barY.value,
+        barFontSize: barFontSize.value,
+        priceText: priceText.value,
+        priceBarColor: priceBarColor.value,
+        priceBarY: priceBarY.value,
+        priceBarFontSize: priceBarFontSize.value,
+        bottomText: bottomText.value,
+        bottomCardColor: bottomCardColor.value,
+        bottomCardTextColor: bottomCardTextColor.value,
+        cardY: cardY.value,
+        bottomCardFontSize: bottomCardFontSize.value,
+        bottomCardRadius: bottomCardRadius.value,
+        gradientColor1: gradientColor1.value,
+        gradientAlpha1: gradientAlpha1.value,
+        gradientColor2: gradientColor2.value,
+        gradientAlpha2: gradientAlpha2.value,
+        bottomCardTextCenter: bottomCardTextCenter.checked,
+      };
+      localStorage.setItem('emojiThumbnailControls', JSON.stringify(controls));
+    }
+
+    // Restore controls from localStorage
+    function restoreControlsFromLocalStorage() {
+      const controls = JSON.parse(localStorage.getItem('emojiThumbnailControls'));
+      if (!controls) return;
+      canvasWidth.value = controls.canvasWidth || canvasWidth.value;
+      canvasHeight.value = controls.canvasHeight || canvasHeight.value;
+      titleText.value = controls.titleText || titleText.value;
+      titleColor.value = controls.titleColor || titleColor.value;
+      titleBgColor.value = controls.titleBgColor || titleBgColor.value;
+      titlePadding.value = controls.titlePadding || titlePadding.value;
+      titleSize.value = controls.titleSize || titleSize.value;
+      subtitleText.value = controls.subtitleText || subtitleText.value;
+      subtitleColor.value = controls.subtitleColor || subtitleColor.value;
+      subtitleSize.value = controls.subtitleSize || subtitleSize.value;
+      barText.value = controls.barText || barText.value;
+      barColor.value = controls.barColor || barColor.value;
+      barTextColor.value = controls.barTextColor || barTextColor.value;
+      barY.value = controls.barY || barY.value;
+      barFontSize.value = controls.barFontSize || barFontSize.value;
+      priceText.value = controls.priceText || priceText.value;
+      priceBarColor.value = controls.priceBarColor || priceBarColor.value;
+      priceBarY.value = controls.priceBarY || priceBarY.value;
+      priceBarFontSize.value = controls.priceBarFontSize || priceBarFontSize.value;
+      bottomText.value = controls.bottomText || bottomText.value;
+      bottomCardColor.value = controls.bottomCardColor || bottomCardColor.value;
+      bottomCardTextColor.value = controls.bottomCardTextColor || bottomCardTextColor.value;
+      cardY.value = controls.cardY || cardY.value;
+      bottomCardFontSize.value = controls.bottomCardFontSize || bottomCardFontSize.value;
+      bottomCardRadius.value = controls.bottomCardRadius || bottomCardRadius.value;
+      gradientColor1.value = controls.gradientColor1 || gradientColor1.value;
+      gradientAlpha1.value = controls.gradientAlpha1 || gradientAlpha1.value;
+      gradientColor2.value = controls.gradientColor2 || gradientColor2.value;
+      gradientAlpha2.value = controls.gradientAlpha2 || gradientAlpha2.value;
+      bottomCardTextCenter.checked = controls.bottomCardTextCenter || false;
+    }
+
+    // All controls rerender thumbnail and save to localStorage
+    [
+      canvasWidth, canvasHeight,
+      titleText, titleColor, titleBgColor, titlePadding, titleSize, subtitleText, subtitleColor, subtitleSize,
+      barText, barColor, barTextColor, barY, barFontSize,
+      priceText, priceBarColor, priceBarY, priceBarFontSize,
+      bottomText, bottomCardColor, bottomCardTextColor, cardY, bottomCardFontSize, bottomCardRadius,
+      gradientColor1, gradientAlpha1, gradientColor2, gradientAlpha2,
+      bottomCardTextCenter
+    ].forEach(el => el.addEventListener('input', function() {
+      renderThumbnail();
+      saveControlsToLocalStorage();
+    }));
+
+    // Canvas size handlers
+    function updateCanvasSize() {
+      const w = Math.max(150, Math.min(1600, parseInt(canvasWidth.value) || 340));
+      const h = Math.max(150, Math.min(2000, parseInt(canvasHeight.value) || 476));
+      canvas.width = w;
+      canvas.height = h;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      renderThumbnail();
+    }
+    canvasWidth.addEventListener('input', updateCanvasSize);
+    canvasHeight.addEventListener('input', updateCanvasSize);
+
+    // Show slider values
+    titlePadding.addEventListener('input', ()=>{titlePaddingVal.textContent=titlePadding.value;});
+    barY.addEventListener('input', ()=>{barYVal.textContent=barY.value;});
+    priceBarY.addEventListener('input', ()=>{priceBarYVal.textContent=priceBarY.value;});
+    cardY.addEventListener('input', ()=>{cardYVal.textContent=cardY.value;});
+
+    // Download
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'pro-emoji-thumbnail.png';
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    // Click label to upload
+    document.querySelector('.upload-label').onclick = () => inputImage.click();
+
+    // On page load, restore controls and update UI
+    restoreControlsFromLocalStorage();
+    updateCanvasSize();
+  </script>
+</body>
+</html>
